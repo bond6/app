@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html style="background-color:LightGray;">
+<style>
+.button {
+  font: bold 11px Arial;
+  text-decoration: none;
+  background-color: #EEEEEE;
+  color: #333333;
+  padding: 3px 10px 3px 10px;
+  border-top: 3px solid #CCCCCC;
+  border-right: 3px solid #333333;
+  border-bottom: 3px solid #333333;
+  border-left: 3px solid #CCCCCC;
+}
+</style>
+  <head>
+    <title>Notification Example</title>
+<script src="js/Dropbox-sdk.min.js"></script>
+<script src="js/xls.full.min.js"></script>
+<script src="js/xlsx.full.min.js"></script>
+<script src="js/jszip.js"></script>
+<script src="js/jquery.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+<script type="text/javascript" charset="utf-8">
+var storage = window.localStorage;
+var value_date = storage.getItem("date");
+var result = [];
+var rowName = [];
+var answer = [];
+var answer1 = [];
+var one_value = [];
+var two_value = [];
+var gau = ['CitriCure', 'Gauzalil SL'];
+var ima = ['Guazalil','IMACulate 300 EC', 'ImazaCure 750 SG'];
+var tbz = ['ICA Thiabendazole 500 SC'];
+var proc = ['ICA-Prochloraz 450 EC'];
+var pyr = ['Protector 400 SC', 'Propirly 270 EC'];
+var prop = ['PropiCure 250 EC', 'Propirly 270 EC'];
+var flud = ['Teacher 230 SC'];
+var ddac = ['Sporekill'];
+var dbx;
+var data1;
+var date_file = null;
+// Wait for device API libraries to load
+//
+document.addEventListener("deviceready", onDeviceReady, false);
+
+// device APIs are available
+//
+function onDeviceReady() {
+    dbx = new Dropbox({ accessToken:'_LOrCLF2yLAAAAAAAAAANR6PrDu-568aHJ2bImCDphqriJOCvQib4vMndS-gTkYk' });
+    dbx.filesListFolder({path: ''}).then(function(response) {
+          for (var i = 0; i < response.entries.length; i++) {
+  	    if(response.entries[i].path_lower == '/file11.xlsx') {
+		date_file = response.entries[i].client_modified;
+            }
+          }
+        }).catch(function(error) {
+          
+            if (storage.getItem('file_data1') != null) {
+var sCSV = storage.getItem('file_data1');
+	var lines=sCSV.split("\n");
+
+	var headers=lines[0].split(",");
+	for(var i=1;i<lines.length;i++){
+
+	  var obj = {};
+	  var currentline=lines[i].split(",");
+	  rowName[i-1] = currentline[0];
+	  if (currentline[0] != "") {
+	  	$("#checkbox_div").append(currentline[0]+"<input class='name' name='citrus_rad' type='radio' id='"+i+"'><br>");
+	  }
+	  for(var j=1;j<headers.length;j++){
+		  if (i == 1) {
+	  	$("#checkbox_div2").append("<div class='country_name' style='position: relative' id='"+headers[j].toLowerCase()+"_con'>"+headers[j]+"<input class='citrus' type='checkbox' id='"+headers[j]+"'></div>");
+	  	}
+		  obj[headers[j]] = currentline[j];
+	  }
+	  
+	  result.push(obj);
+
+	}
+
+	result.pop();
+	var sCSV = storage.getItem('file_data2');    
+	var lines=sCSV.split("\n");
+	for(var i=0;i<lines.length-1;i++){
+		var currentline=lines[i].split(",");
+		for(var j=1;j<currentline.length;j++){
+			if (currentline[j] != "") {
+  				$("#checkbox_div2").append("<div class='country_name' style='position: relative' id='"+currentline[j].toLowerCase()+"_con'>"+currentline[j]+"<input class='name' type='checkbox' id='"+currentline[0]+"'></div>");
+			}
+  		}
+		
+	}
+$('#checkbox_div2 div').sort(function (a, b)
+	{
+		return String.prototype.localeCompare.call(a.id.toLowerCase(), b.id.toLowerCase());
+	}
+).each(function() {
+	var elem = $(this);
+	elem.remove();
+	$(elem).appendTo('#checkbox_div2');
+});
+} else {
+	alert("Be online for first time entering.");
+}  
+        }
+        ).then(function() {
+    if(date_file !=  value_date) {
+    dbx.filesDownload({path: '/file11.xlsx'}).then(function(response) {
+    storage.setItem("date", response.client_modified);
+    //console.log(response);
+    var blob = response.fileBlob;
+    var reader = new FileReader();
+
+    reader.addEventListener("loadend", function() {
+    var data = reader.result;
+    var workbook = XLSX.read(data, {type: 'binary'});
+    workbook.SheetNames.forEach(function(sheetName) {
+    if(sheetName == "Sheet1") {
+        var sCSV = XLS.utils.make_csv(workbook.Sheets[sheetName]);
+        storage.setItem('file_data1', sCSV);  
+        var oJS = XLS.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+	var lines=sCSV.split("\n");
+	
+	var headers=lines[0].split(",");
+	for(var i=1;i<lines.length;i++){
+
+	    var obj = {};
+	    var currentline=lines[i].split(",");
+            rowName[i-1] = currentline[0];
+	    if (currentline[0] != "") {
+	  	$("#checkbox_div").append(currentline[0]+"<input name='citrus_rad' class='name' type='radio' id='"+i+"'><br>");
+	    }
+	    for(var j=1;j<headers.length;j++){
+		if (i == 1) {
+	  	  $("#checkbox_div2").append("<div class='country_name' style='position: relative' id='"+headers[j].toLowerCase()+"_con'>"+headers[j]+"<input class='citrus' type='checkbox' id='"+headers[j]+"'></div>");
+	  	}
+		obj[headers[j]] = currentline[j];
+	    }
+	  
+	    result.push(obj);
+
+  	}
+  	
+	    result.pop();
+ 	} else {
+		var sCSV = XLS.utils.make_csv(workbook.Sheets[sheetName]);
+                storage.setItem('file_data2', sCSV);    
+        	var oJS = XLS.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+		var lines=sCSV.split("\n");
+		for(var i=0;i<lines.length-1;i++){
+			var currentline=lines[i].split(",");
+			for(var j=1;j<currentline.length;j++){
+				if (currentline[j] != "") {
+	  				$("#checkbox_div2").append("<div class='country_name' style='position: relative' id='"+currentline[j].toLowerCase()+"_con'>"+currentline[j]+"<input class='name' type='checkbox' id='"+currentline[0]+"'></div>");
+				}
+	  		}
+			
+		}
+	}
+	
+  	//console.log(result[0]["RSA"].split("\\r"));
+	//console.log(testString);
+      });
+$('#checkbox_div2 div').sort(function (a, b)
+	{
+		return String.prototype.localeCompare.call(a.id.toLowerCase(), b.id.toLowerCase());
+	}
+).each(function() {
+	var elem = $(this);
+	elem.remove();
+	$(elem).appendTo('#checkbox_div2');
+});
+    });
+
+    reader.onerror = function(ex) {
+      console.log(ex);
+    };
+
+    reader.readAsBinaryString(blob);
+    $('#checkbox_div2 div').sort(function (a, b)
+		{
+			return String.prototype.localeCompare.call(a.id.toLowerCase(), b.id.toLowerCase());
+		}
+	).each(function() {
+		var elem = $(this);
+		elem.remove();
+		$(elem).appendTo('#checkbox_div2');
+	});
+  });} else {
+	var sCSV = storage.getItem('file_data1');
+	var lines=sCSV.split("\n");
+
+	var headers=lines[0].split(",");
+	for(var i=1;i<lines.length;i++){
+
+	  var obj = {};
+	  var currentline=lines[i].split(",");
+	  rowName[i-1] = currentline[0];
+	  if (currentline[0] != "") {
+	  	$("#checkbox_div").append(currentline[0]+"<input name='citrus_rad' class='name' type='radio' id='"+i+"'><br>");
+	  }
+	  for(var j=1;j<headers.length;j++){
+		  if (i == 1) {
+	  	$("#checkbox_div2").append("<div class='country_name' style='position: relative' id='"+headers[j].toLowerCase()+"_con'>"+headers[j]+"<input class='citrus' type='checkbox' id='"+headers[j]+"'></div>");
+	  	}
+		  obj[headers[j]] = currentline[j];
+	  }
+	  
+	  result.push(obj);
+
+	}
+
+	result.pop();
+	var sCSV = storage.getItem('file_data2');    
+	var lines=sCSV.split("\n");
+	for(var i=0;i<lines.length-1;i++){
+		var currentline=lines[i].split(",");
+		for(var j=1;j<currentline.length;j++){
+			if (currentline[j] != "") {
+  				$("#checkbox_div2").append("<div class='country_name' style='position: relative' id='"+currentline[j].toLowerCase()+"_con'>"+currentline[j]+"<input class='name' type='checkbox' id='"+currentline[0]+"'></div>");
+			}
+  		}
+		
+	}
+$('#checkbox_div2 div').sort(function (a, b)
+	{
+		return String.prototype.localeCompare.call(a.id.toLowerCase(), b.id.toLowerCase());
+	}
+).each(function() {
+	var elem = $(this);
+	elem.remove();
+	$(elem).appendTo('#checkbox_div2');
+});
+}
+});
+ 
+  jQuery.fn.scrollTo = function(elem) { 
+    $(this).scrollTop($(this).scrollTop() - $(this).offset().top + $(elem).offset().top); 
+    return this; 
+};
+    }
+    // alert dialog dismissed
+    function alertDismissed() {
+            // do something
+    }
+
+    // Show a custom alertDismissed
+    //
+    function showAlert() {
+        /*navigator.notification.alert(
+            'You are the winner!',  // message
+            alertDismissed,         // callback
+            'Game Over',            // title
+            'Done'                  // buttonName
+        );
+	$('#test_d').append("test");*/
+    }
+    function get_Values() {
+	$("#answer").empty();
+	var checked_countries= [];
+	var checked_citrus= [];
+	one_value = [];
+	two_value = [];
+	answer = [];
+	$("#checkbox_div2 input:checked").each(function(){
+		checked_countries.push($(this).attr('id'));	
+	});
+	$("#checkbox_div input:checked").each(function(){
+		checked_citrus.push($(this).attr('id'));	
+	});
+	//console.log(checked_countries);
+	//console.log(checked_citrus);
+	for (var i = 0; i < checked_countries.length; i++) {
+		for (var j = 0; j < checked_citrus.length; j++) {
+			add_to_answer(result[parseInt(checked_citrus[j])][checked_countries[i]]);
+		}
+	}
+	for (var i = 0; i < answer.length; i++) {
+		var two_values = [];
+		
+		two_values = answer[i].split(" ");
+		if (one_value.indexOf(two_values[0]) == -1) {
+			if(two_values[1] == "N") {
+				one_value[i] = two_values[0];
+				two_value[i] = parseFloat("-1");
+			} else if (two_values[1] == "E") {
+				one_value[i] = two_values[0];
+				two_value[i] = parseFloat("-2");
+			} else {
+				one_value[i] = two_values[0];
+				two_value[i] = parseFloat(two_values[1]);
+			}
+		} else {
+			var index_val = one_value.indexOf(two_values[0]);
+			var value = two_value[index_val];
+			if(two_values[1] == "N") {
+				two_value[index_val] = parseFloat("-1");
+			} else if (two_values[1] == "E") {
+				if (value == -1) {
+				}  else {
+					two_value[index_val] = parseFloat("-2");
+				}
+			} else {
+				if (value == -2) {
+					two_value[index_val] = parseFloat("-2");
+				}  else if (value == -1) {
+					two_value[index_val] = parseFloat("-1");
+				} else if (parseFloat(two_values[1]) < value) {
+					two_value[index_val] = parseFloat(two_values[1]);
+				}
+			}
+		}
+		
+	}
+	$("#answer").append("<style>table, th, td {border: 1px solid black;} </style>");
+        $("#answer").append("<table>");
+        $("#answer").append("<tr><th>Active </th><th>MRL</th><th>Products</th> </tr>");
+	var str = '';
+        var arrProducts = [];
+	for (var i = 0; i < one_value.length; i++) {
+		str = '';
+                if (one_value[i] == "DDAC") {
+			arrProducts = ddac;
+                } else if (one_value[i] == "Fludioxonil") {
+			arrProducts = flud;
+		} else if (one_value[i] == "Guazatine") {
+			arrProducts = gau;
+		} else if (one_value[i] == "Imazalil") {
+			arrProducts = ima;
+		} else if (one_value[i] == "Prochloraz") {
+			arrProducts = proc;
+		} else if (one_value[i] == "Propiconazole") {
+			arrProducts = prop;
+		} else if (one_value[i] == "Pyrimethanil") {
+			arrProducts = pyr;
+		} else if (one_value[i] == "TBZ") {
+			arrProducts = tbz;
+		}
+                for (var j = 0; j < arrProducts.length; j++) {
+			str += arrProducts[j] + "<br>";
+                }
+		if (two_value[i] == -1) {
+			//$("#answer").append(one_value[i]+ " N <br>");
+		} else if (two_value[i] == -2) {
+			$("#answer").append("<tr> <td>" + one_value[i] + "</td><td align='center'> Exempt </td> <td>"+str+" </td></tr>");
+		} else {
+			$("#answer").append("<tr> <td>" + one_value[i] + "</td><td align='center'> " + two_value[i] +"</td> <td>"+str+" </td></tr>");
+		}
+	}
+	$("#answer").append("</table>");
+}
+function add_to_answer(to_add) {
+	var values_add = to_add.split("\\r");
+	for (var i = 0; i < values_add.length; i++) {
+		if (answer.indexOf(values_add[i]) == -1) {
+			answer.push(values_add[i]);		
+		}
+	}
+}
+function scroll_to() {
+	var $container = $('#checkbox_div2');
+    	$value = $('#input_country').val().toLowerCase();
+        var $scrolltodiv = $('div[id^='+$value+'][id$=_con]');
+	$("#checkbox_div2").scrollTo($scrolltodiv);
+}
+    </script>
+  </head>
+<hr style="background-color:#00A7CB;height:40px;"></hr>
+<img src="img/logo.png"><br>
+  <body >
+    
+<div style="margin-left:0;">
+<b style="margin-left:20px;">Citrus Commondity</b>
+<form>
+<div id='checkbox_div'></div></form>
+<br>
+Find country: <input id='input_country' type='input' onkeyup='scroll_to();'>
+<br> <b  style="margin-left:20px;">Markets (Countries) Exported to:</b>
+<div id='checkbox_div2' style="width: 200px;height: 150px;overflow: scroll;background-color:white;"></div>
+<b><p style="margin-left:20px;"><a class="button" href="#" onclick="get_Values(); return false;">Get Answer</a></p></b>
+<div id='answer'>
+
+</div>
+</div>
+  </body>
+<hr style="background-color:#00A7CB;height:40px;"></hr>
+</html>
